@@ -2,34 +2,39 @@
 
 var player = {x: 1, y: 1, color:0x206be5, glyphColor:0xb270e5, glyph:0xf6};
 
-
-
-
 const tileset = {
-    " ": {wall: 0, spawn: 0, color:0, glyphColor:0, glyph:0x00},    // empty
-    "#": {wall: 1, spawn: 0, color:0x7c1d35, glyphColor:0xc6babd, glyph:0xda},    // brick
-    "=": {wall: 1, spawn: 0, color:0x595959, glyphColor:0xbcbcbc, glyph:0xda},    // brick 2
-    "~": {wall: 1, spawn: 0, color:0x2358ba, glyphColor:0x73aadd, glyph:0xf7},    // water
-    "D": {wall: 0, spawn: 1, color:0x000000, glyphColor:0xeafffc, glyph:0xeb},    // DIAMOND
-    "P": {wall: 0, spawn: 1, color:0x000000, glyphColor:0xb92ccc, glyph:0xde},    // POTION
-    "E": {wall: 0, spawn: 1, color:0x000000, glyphColor:0x76a86b, glyph:0xee},    // ENEMY
+    " ": {wall: 0, type: "Empty",   spawn: 0, color:0, glyphColor:0, glyph:0x00},    // empty
+    "#": {wall: 1, type: "Brick",   spawn: 0, color:0x7c1d35, glyphColor:0xc6babd, glyph:0xda},    // brick
+    "=": {wall: 1, type: "Brick",   spawn: 0, color:0x595959, glyphColor:0xbcbcbc, glyph:0xda},    // brick 2
+    "~": {wall: 1, type: "Water",   spawn: 0, color:0x2358ba, glyphColor:0x73aadd, glyph:0xf7},    // water
+    "D": {wall: 0, type: "Diamond", spawn: 0, color:0x000000, glyphColor:0xeafffc, glyph:0xeb},    // DIAMOND
+    "P": {wall: 0, type: "Potion",  spawn: 0, color:0x000000, glyphColor:0xb92ccc, glyph:0xde},    // POTION
+    "E": {wall: 0, type: "Enemy",   spawn: Enemy, color:0x000000, glyphColor:0x76a86b, glyph:0xee},    // ENEMY
 };
 
-var map = [
+var gameObjects = [];
+
+var LEVEL_ONE = [
 "#################",
-"#               #",
-"#         =D   =#",
-"#         ==   D#",
+"# D             #",
+"#P        =D   =#",
+"#   E     ==   D#",
 "#         =D   =#",
 "#      PPP==   D#",
 "#==========D   =#",
 "#~~~~~~~~~==   D#",
-"#~~PPEEEEE     =#",
+"#~~PP      E   =#",
 "#################"
-];
+].map(line => line.split(''));
 
-const w = map[0].length;
-const h = map.length;
+let current_level;
+
+const w = LEVEL_ONE[0].length;
+const h = LEVEL_ONE.length;
+
+function selectFromList(list) {
+    return list[SM.randBetween(0, list.length-1)];
+}
 
 function KeyHandler(key) {
     // SM.log(["keydown", key].join(", "));
@@ -44,26 +49,65 @@ function KeyHandler(key) {
         player.x++;
     }
 
-    if(getTile(player.x, player.y).wall){
+    if(getTile(current_level, player.x, player.y).wall){
         player.x = old.x;
         player.y = old.y;
     }
-
-    drawScreen();
+    if(getTile(current_level, player.x, player.y).type == "Diamond"){
+        SM.play('Coin3');
+        setTile(current_level, player.x, player.y, " ");
+    }
+        if(getTile(current_level, player.x, player.y).type == "Potion"){
+        SM.play('PowerUp2');
+        setTile(current_level, player.x, player.y, " ");
+    }
+    tickGameObjects();
+    drawScreen(current_level);
 }
 
-function setup() {
-    drawScreen();
+function tickGameObjects(){
+    gameObjects.forEach(obj => {
+        obj.tick();
+    });
 }
 
-function getTile(x, y) {
-    return tileset[map[y][x]];
+function renderGameObjects(){
+    gameObjects.forEach(obj => {
+        obj.render();
+    });
 }
 
-function drawMap() {
+function setup(level) {
+    current_level = level;
+    spawnObjects(level);
+    drawScreen(level);
+}
+
+function spawnObjects(level) {
     for(let x = 0; x < w; x++) {
         for( let y = 0; y < h; y++) {
-            SM.set(x, y, getTile(x,y))
+            let tile = getTile(level, x,y);
+            if(tile.spawn) {
+                let object = new tile.spawn(level, x, y);
+                gameObjects.push(object);
+                setTile(level, x, y, " ");
+            }
+        }
+    }
+}
+
+function getTile(level, x, y) {
+    return tileset[level[y][x]];
+}
+
+function setTile(level, x, y, tile) {
+    level[y][x] = tile;
+}
+
+function drawLevel(level) {
+    for(let x = 0; x < w; x++) {
+        for( let y = 0; y < h; y++) {
+            SM.set(x, y, getTile(level, x,y))
         }
     }
 }
@@ -72,9 +116,10 @@ function clearScreen(){
     S().color(0).glyphColor(0);
 }
 
-function drawScreen() {
+function drawScreen(level) {
     clearScreen();
-    drawMap();
+    drawLevel(level);
+    renderGameObjects();
     drawPlayer();
 }
 
@@ -82,7 +127,6 @@ function drawPlayer(){
     SM.color(player.x, player.y, player.color);
     SM.glyph(player.x, player.y, player.glyph);
     SM.glyphColor(player.x, player.y, player.glyphColor);
-
 }
 
 var SM = new Spielmatrix({
@@ -126,4 +170,4 @@ var S = SM.selector();
 // Draw a glyph & glyph in every bead 
 S().glyph(0xF9).glyphColor(0x232355);
 
-setup();
+setup(LEVEL_ONE);
