@@ -6,10 +6,10 @@ const tileset = {
     " ": {wall: 0, type: "Empty",   spawn: 0, color:0, glyphColor:0, glyph:0x00},    // empty
     "#": {wall: 1, type: "Brick",   spawn: 0, color:0x7c1d35, glyphColor:0xc6babd, glyph:0xda},    // brick
     "=": {wall: 1, type: "Brick",   spawn: 0, color:0x595959, glyphColor:0xbcbcbc, glyph:0xda},    // brick 2
-    "~": {wall: 1, type: "Water",   spawn: 0, color:0x2358ba, glyphColor:0x73aadd, glyph:0xf7},    // water
+    "~": {wall: 0, type: "Water",   spawn: 0, color:0x2358ba, glyphColor:0x73aadd, glyph:0xf7},    // water
     "D": {wall: 0, type: "Diamond", spawn: 0, color:0x000000, glyphColor:0xeafffc, glyph:0xeb},    // DIAMOND
     "P": {wall: 0, type: "Potion",  spawn: 0, color:0x000000, glyphColor:0xb92ccc, glyph:0xde},    // POTION
-    "E": {wall: 0, type: "Enemy",   spawn: Enemy, color:0x000000, glyphColor:0x76a86b, glyph:0xee},    // ENEMY
+    "E": {wall: 0, type: "Enemy",   spawn: Enemy, glyphColor:0x76a86b, glyph:0xee},    // ENEMY
 };
 
 var gameObjects = [];
@@ -23,7 +23,7 @@ var LEVEL_ONE = [
 "#      PPP==   D#",
 "#==========D   =#",
 "#~~~~~~~~~==   D#",
-"#~~PP      E   =#",
+"#~~PP EE   E   =#",
 "#################"
 ].map(line => line.split(''));
 
@@ -124,7 +124,7 @@ function drawScreen(level) {
 }
 
 function drawPlayer(){
-    SM.color(player.x, player.y, player.color);
+    // SM.color(player.x, player.y, player.color);
     SM.glyph(player.x, player.y, player.glyph);
     SM.glyphColor(player.x, player.y, player.glyphColor);
 }
