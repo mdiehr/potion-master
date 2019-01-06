@@ -58,7 +58,7 @@ function KeyHandler(key) {
         setTile(current_level, player.x, player.y, " ");
     }
         if(getTile(current_level, player.x, player.y).type == "Potion"){
-        SM.play('PowerUp2');
+        SM.play('Powerup2');
         setTile(current_level, player.x, player.y, " ");
     }
     tickGameObjects();
